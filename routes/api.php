@@ -6,6 +6,8 @@ Route::apiResource("/{question}/reply","replyController");
 Route::post("like/{reply}","likeController@likeIt");
 Route::Delete("like/{reply}","likeController@unLikeIt");
 
+Route::post("/notifications","AuthController@notifications");
+Route::post("/markAsRead","AuthController@markAsRead");
 
 Route::group([
 

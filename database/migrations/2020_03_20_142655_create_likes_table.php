@@ -22,12 +22,12 @@ class CreateLikesTable extends Migration
             ->on('users')
             ->onDelete('cascade')
             ->onUpdate("cascade");
-            
+
             $table->foreign('reply_id')
             ->references('id')
-            ->on('users')
+            ->on('replies')
             ->onDelete('cascade')
-            ->onUpdate("cascade");  
+            ->onUpdate("cascade");
             $table->timestamps();
         });
     }

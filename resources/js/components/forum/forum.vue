@@ -12,7 +12,7 @@
 
 
 			<v-col cols="4">
-				lol
+		<sidebar></sidebar>
 			</v-col>
 		</v-row>
 	</v-container>
@@ -20,6 +20,7 @@
 
 <script>
 import questions from "./questions"
+import sidebar from "./sidebar"
 export default{
 	data(){
 		return {
@@ -33,10 +34,10 @@ export default{
 
 	},
 	components:{
-		questions
+		questions,sidebar
 	}
 
-}	
+}
 </script>
 
 <style>

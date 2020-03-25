@@ -1,7 +1,7 @@
 <template>
-	<v-app>
+	<v-app >
 
-		<toolbar></toolbar>
+		<toolbar ></toolbar>
 
 		<app-footer></app-footer>
 	</v-app>
@@ -12,7 +12,7 @@ import toolbar from "./toolbar"
 import appFooter from "./appFooter"
 export default{
 	components:{toolbar,appFooter}
-}	
+}
 </script>
 
 <style>

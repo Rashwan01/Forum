@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ReplyResource;
 use App\Model\Question;
 use App\Model\Reply;
+use App\Notifications\replyQuestion;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,7 +18,7 @@ class ReplyController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jwt', ['except' => ['index','show']]);
+        $this->middleware('jwt', ['except' => ['index', 'show']]);
     }
 
     /**
@@ -35,10 +36,16 @@ class ReplyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request,Question $question)
+    public function store(Request $request, Question $question)
     {
         $reply = $question->replies()->create($request->all());
-        return response(["reply"=>new ReplyResource($reply)],Response::HTTP_CREATED);
+        $user = $question->user;
+        if ($reply->user_id !== $question->user_id) {
+
+            $user->notify(new replyQuestion($reply));
+
+        }
+        return response(["reply" => new ReplyResource($reply)], Response::HTTP_CREATED);
     }
 
     /**
@@ -47,7 +54,7 @@ class ReplyController extends Controller
      * @param  \App\Model\Reply  $reply
      * @return \Illuminate\Http\Response
      */
-    public function show(Question $question,Reply $reply)
+    public function show(Question $question, Reply $reply)
     {
         return new ReplyResource($reply);
     }
@@ -59,12 +66,11 @@ class ReplyController extends Controller
      * @param  \App\Model\Reply  $reply
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request,Question $question, Reply $reply)
+    public function update(Request $request, Question $question, Reply $reply)
     {
-      $reply->update($request->all());
-      return response('accepted',Response::HTTP_ACCEPTED);
-
-  }
+        $reply->update($request->all());
+        return response('accepted', Response::HTTP_ACCEPTED);
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -72,9 +78,9 @@ class ReplyController extends Controller
      * @param  \App\Model\Reply  $reply
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Question $question,Reply $reply)
+    public function destroy(Question $question, Reply $reply)
     {
         $reply->delete();
-        return response(null,Response::HTTP_NO_CONTENT);
+        return response(null, Response::HTTP_NO_CONTENT);
     }
 }

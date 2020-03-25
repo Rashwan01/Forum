@@ -26,7 +26,7 @@ class Question extends Model
 	}
 	public function replies(){
 
-		return $this->hasMany(Reply::class);
+		return $this->hasMany(Reply::class,"question_id")->latest();
 	}
 	public function category(){
 
@@ -34,6 +34,6 @@ class Question extends Model
 	}
 	public function getPathAttribute(){
 
-		return "question/$this->slug";		
+		return "question/$this->slug";
 	}
 }

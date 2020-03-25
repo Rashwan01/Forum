@@ -6,6 +6,7 @@
 	import forum from '../components/forum/forum'
 	import question from '../components/forum/question'
 	import askQuestion from '../components/forum/createQuestion'
+	import createCategory from '../components/category/create'
 	Vue.use(VueRouter)
 
 	const routes = [
@@ -35,6 +36,11 @@
 		path: '/askquestion/',
 		component:askQuestion,
 		name:"askQuestion"
+    },
+    {
+		path: '/category/create',
+		component:createCategory,
+		name:"createCategory"
 	},
 	]
 

@@ -9,7 +9,7 @@
 
 		responseAfterLogin(res)
 		{
-	
+
 			const access_token = res.data.access_token;
 			const username = res.data.user;
 			if(Token.isValid(access_token))
@@ -56,6 +56,9 @@
 		own(id)
 		{
 			return this.id() == id
-		}
+        }
+        isAdmin(){
+            return this.id() == 1
+        }
 	}
 	export default User = new User();

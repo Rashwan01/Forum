@@ -37,8 +37,8 @@ class CategoryController extends Controller
      }
      $this->data['name']= $request['name'];
      $this->data['slug'] = Str::slug($request['name'],"-");
-     category::create($this->data);
-     return response()->json("created",Response::HTTP_CREATED);
+    $data =  category::create($this->data);
+     return response()->json($data,Response::HTTP_CREATED);
  }
 
     /**
@@ -68,7 +68,7 @@ class CategoryController extends Controller
          return response()->json(['errors'=>$validator->errors()]);
      }
      $category->update(['name'=> $request->name,'slug'=>Str::slug($request->name,'-')]);
-     return response('accepted',Response::HTTP_ACCEPTED);
+     return response($category,Response::HTTP_ACCEPTED);
 
  }
 

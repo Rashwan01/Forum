@@ -1,8 +1,10 @@
 <template>
+<div>
+
 	<edit-question :data="data" v-if="editMode"></edit-question>
-	<v-card class="mt-4" dark v-else-if="itsOk && ! editMode" >
+	<v-card class="mt-4"  v-else-if="itsOk && ! editMode" >
 		<v-card-title v-text="data.title"></v-card-title>
-		<v-card-subtitle  >{{data.title}}   {{data.create_at}} 	
+		<v-card-subtitle  >{{data.title}}   {{data.create_at}}
 		</v-card-subtitle>
 		<v-card-text v-text="data.body"></v-card-text>
 		<v-card-actions v-if="IsOwnToAuthUser()">
@@ -15,10 +17,19 @@
 			</v-btn>
 		</v-card-actions>
 	</v-card>
+
+
+    <replies :questionSlug="data.slug" :replies="data.replies"></replies>
+    <add-reply :questionSlug = "data.slug"></add-reply>
+</div>
+
 </template>
 
 <script>
 import editQuestion from "./editQuestion"
+import replies from "./replies"
+import addReply from "./reply"
+
 export default{
 
 	data(){
@@ -28,7 +39,7 @@ export default{
 			editMode:false
 		}
 	},
-	
+
 	created(){
 
 		this.cancel()
@@ -65,9 +76,9 @@ export default{
 			});
 		}
 	},
-	components:{editQuestion}
+	components:{editQuestion,replies,addReply}
 
-}	
+}
 </script>
 
 <style>

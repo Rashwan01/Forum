@@ -21,6 +21,8 @@ class QuestionResource extends JsonResource
             "title"=>$this->title,
             "slug"=>$this->slug,
             "body"=>$this->body,
+            "replies"=>ReplyResource::collection($this->replies),
+            "replies_count"=>$this->replies->count(),
             "create_at"=>$this->created_at->diffForHumans(),
             "category"=>$this->category->name,
             "category_id"=>$this->category->id,
