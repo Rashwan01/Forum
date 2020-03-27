@@ -45,7 +45,7 @@ window.Echo = new Echo({
     encrypted: true,
     auth: {
         headers: {
-            Authorization: JWTtoken,
+            'Authorization': JWTtoken,
         }
     }
 });

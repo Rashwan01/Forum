@@ -1,15 +1,16 @@
 <template>
 
 
-	<v-footer 
-	
+	<v-footer
+    fixed
+
 	class="font-weight-medium"
 	>
 	<v-col
 	class="text-center"
 	cols="12"
 	>
-	{{ new Date().getFullYear() }} — <strong>Forum</strong>
+	{{ new Date().getFullYear() }} —  <strong>Forum</strong>
 </v-col>
 </v-footer>
 
@@ -20,7 +21,7 @@
 export default{
 
 
-}	
+};
 </script>
 
 <style>

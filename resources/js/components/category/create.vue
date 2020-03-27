@@ -4,8 +4,21 @@
       <v-col cols="6" class="mx-auto mb-10">
         <form>
           <v-text-field v-model="form.name" label="category name" required></v-text-field>
-          <v-btn color="primary" class="mr-4" @click="submit" v-if="!editSlug">Create category</v-btn>
-          <v-btn color="primary" class="mr-4" @click="submit" v-else>update category</v-btn>
+          <v-alert type="error" v-if="errors">Please Give the Category Name</v-alert>
+          <v-btn
+            color="primary"
+            :disabled="disabled"
+            class="mr-4"
+            @click="submit"
+            v-if="!editSlug"
+          >Create category</v-btn>
+          <v-btn
+            color="primary"
+            :disabled="disabled"
+            class="mr-4"
+            @click="submit"
+            v-else
+          >update category</v-btn>
         </form>
       </v-col>
       <v-col cols="6"></v-col>
@@ -30,22 +43,28 @@ export default {
         name: null
       },
       categories: {},
-      editSlug: null
+      editSlug: null,
+      errors: null
     };
   },
+  computed: {
+    disabled() {
+      return !this.form.name;
+    }
+  },
   created() {
-      if(!User.isAdmin()){
- this.$router.push({name:forum})
-      }
+    if (!User.isAdmin()) {
+      this.$router.push({ name: forum });
+    }
     axios.get("/api/category").then(res => {
       this.categories = res.data;
     });
-    console.log(this.editSlug)
+    console.log(this.editSlug);
   },
 
   methods: {
     submit() {
-        console.log(this.editSlug);
+      console.log(this.editSlug);
       this.editSlug == null ? this.create() : this.update();
     },
     create() {
@@ -55,7 +74,7 @@ export default {
           this.categories.unshift(res.data);
           this.form.name = null;
         })
-        .catch(error => console.log(error));
+        .catch(error => (this.errors = error.response.data.errors));
     },
     update() {
       axios
@@ -76,9 +95,9 @@ export default {
         .catch(error => console.log(error));
     },
     edit(index) {
-      this.form.name = this.categories[index].name,
-        this.editSlug = this.categories[index].slug,
-        this.categories.splice(index,1)
+      (this.form.name = this.categories[index].name),
+        (this.editSlug = this.categories[index].slug),
+        this.categories.splice(index, 1);
     }
   }
 };

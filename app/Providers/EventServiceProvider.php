@@ -16,7 +16,11 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
      "App\Events\LikeEvent"=> [
-        "App\listeners\LikeEventlistener"
+        "App\listeners\LikeEventlistener",
+
+        ],
+        "App\Events\DeleteReplyEvent"=> [
+            "App\listeners\DeleteReplyEventlistener"
         ],
     ];
 

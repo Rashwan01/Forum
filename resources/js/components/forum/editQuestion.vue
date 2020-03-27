@@ -9,9 +9,6 @@
 					required
 					></v-text-field>
 					<vue-simplemde v-model="form.body" ref="markdownEditor" />
-
-
-
 					<v-btn color="primary" class="mr-4" @click="update">update question</v-btn>
 
 				</form>

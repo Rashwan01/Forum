@@ -11,6 +11,7 @@ class Question extends Model
 	protected $fillable = ["title","slug","body","user_id","category_id"];
 
 	protected  static function boot(){
+
 		parent::boot();
 		static::creating(function($question){
 			$question->slug = Str::slug($question->title,"-");
@@ -26,7 +27,7 @@ class Question extends Model
 	}
 	public function replies(){
 
-		return $this->hasMany(Reply::class,"question_id")->latest();
+		return $this->hasMany(Reply::class,"question_id");
 	}
 	public function category(){
 

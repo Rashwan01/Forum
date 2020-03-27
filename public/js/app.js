@@ -1926,6 +1926,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({});
 
 /***/ }),
@@ -1941,7 +1942,6 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _toolbar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./toolbar */ "./resources/js/components/toolbar.vue");
 /* harmony import */ var _appFooter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./appFooter */ "./resources/js/components/appFooter.vue");
-//
 //
 //
 //
@@ -2199,6 +2199,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2206,8 +2219,14 @@ __webpack_require__.r(__webpack_exports__);
         name: null
       },
       categories: {},
-      editSlug: null
+      editSlug: null,
+      errors: null
     };
+  },
+  computed: {
+    disabled: function disabled() {
+      return !this.form.name;
+    }
   },
   created: function created() {
     var _this = this;
@@ -2236,7 +2255,7 @@ __webpack_require__.r(__webpack_exports__);
 
         _this2.form.name = null;
       })["catch"](function (error) {
-        return console.log(error);
+        return _this2.errors = error.response.data.errors;
       });
     },
     update: function update() {
@@ -2303,8 +2322,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2316,6 +2333,11 @@ __webpack_require__.r(__webpack_exports__);
       categories: {},
       errors: {}
     };
+  },
+  computed: {
+    disabled: function disabled() {
+      return !(this.form.title && this.form.body && this.form.category_id);
+    }
   },
   created: function created() {
     var _this = this;
@@ -2331,7 +2353,7 @@ __webpack_require__.r(__webpack_exports__);
       axios.post("/api/question", this.form).then(function (res) {
         return _this2.$router.push(res.data.path);
       })["catch"](function (error) {
-        return console.log(error.response.data.error);
+        return _this2.errors = error.response.data.errors;
       });
     }
   }
@@ -2348,9 +2370,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
 //
 //
 //
@@ -2426,19 +2445,27 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      data: {}
+      data: {},
+      visible: true
     };
   },
   created: function created() {
     var _this = this;
 
     axios.get("api/question").then(function (res) {
-      return _this.data = res.data.data;
+      _this.data = res.data.data;
+      _this.visible = false;
     })["catch"](function (error) {
       return console.log(error);
     });
@@ -2477,6 +2504,7 @@ __webpack_require__.r(__webpack_exports__);
   created: function created() {
     var _this = this;
 
+    console.log(this.liked);
     Echo.channel('likeChannel').listen('LikeEvent', function (e) {
       if (_this.data.id == e.id) {
         e.type == 1 ? _this.count++ : _this.count--;
@@ -2562,7 +2590,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       data: {},
       itsOk: false,
-      editMode: false
+      editMode: false,
+      visible: true
     };
   },
   created: function created() {
@@ -2571,6 +2600,7 @@ __webpack_require__.r(__webpack_exports__);
     this.cancel();
     axios.get("/api/question/".concat(this.$route.params.slug)).then(function (res) {
       _this.data = res.data.data, _this.itsOk = true;
+      _this.visible = false;
     })["catch"](function (error) {
       return console.log(error);
     });
@@ -2578,6 +2608,9 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     body: function body() {
       return md.parse(this.data.body);
+    },
+    userIsLogin: function userIsLogin() {
+      return User.isLogin();
     }
   },
   methods: {
@@ -2624,7 +2657,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
 //
 //
 //
@@ -2689,8 +2721,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+  inject: ["theme"],
   props: ["replies", "questionSlug"],
   data: function data() {
     return {
@@ -2710,12 +2749,17 @@ __webpack_require__.r(__webpack_exports__);
       EventBus.$on("appendNewComment", function (comment) {
         console.log(comment);
 
-        _this.replies.unshift(comment);
-
-        window.scrollTo(0, 0);
+        _this.replies.push(comment);
       });
-      Echo["private"]('App.User.' + User.id()).notification(function (notification) {
-        _this.replies.unshift(notification.reply);
+      Echo["private"]("App.User." + User.id()).notification(function (notification) {
+        _this.replies.push(notification.reply);
+      });
+      Echo.channel("DeleteReplyChannel").listen("DeleteReplyEvent", function (e) {
+        for (var index = 0; index < _this.replies.length; index++) {
+          if (_this.replies[index].id == e.id) {
+            _this.replies.splice(index, 1);
+          }
+        }
       });
     },
     destroy: function destroy(index, reply_id) {
@@ -2810,10 +2854,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      categories: {}
+      categories: {},
+      visible: true
     };
   },
   created: function created() {
@@ -2821,6 +2875,7 @@ __webpack_require__.r(__webpack_exports__);
 
     axios.get("api/category").then(function (res) {
       _this.categories = res.data;
+      _this.visible = false;
     });
   }
 });
@@ -2863,42 +2918,65 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       read: {},
       unread: {},
-      unreadCount: 0
+      unreadCount: 0,
+      sound: "http://soundbible.com/mp3/Air%20Plane%20Ding-SoundBible.com-496729130.mp3"
     };
   },
   created: function created() {
+    var _this = this;
+
     if (User.isLogin()) {
       this.getNotificaions();
     }
 
-    console.log(this.read);
+    Echo["private"]("App.User." + User.id()).notification(function (notification) {
+      _this.unread.unshift(notification);
+
+      _this.unreadCount++;
+
+      _this.playSound();
+    });
   },
   methods: {
+    playSound: function playSound() {
+      var alert = new Audio(this.sound);
+      alert.play();
+    },
     getNotificaions: function getNotificaions() {
-      var _this = this;
+      var _this2 = this;
 
       axios.post("/api/notifications").then(function (res) {
-        _this.read = res.data.read;
-        _this.unread = res.data.unread;
-        _this.unreadCount = res.data.unread.length;
+        _this2.read = res.data.read;
+        _this2.unread = res.data.unread;
+        _this2.unreadCount = res.data.unread.length;
       })["catch"](function (error) {
-        return console.log(error);
+        return Exception.handle(error);
       });
     },
     readIt: function readIt(Notification) {
-      var _this2 = this;
+      var _this3 = this;
 
       axios.post("/api/markAsRead", {
         id: Notification.id
       }).then(function (res) {
-        _this2.unread.splice(Notification, 1);
+        _this3.unread.splice(Notification, 1);
 
-        _this2.unreadCount -= 1;
+        _this3.unreadCount -= 1;
       })["catch"](function (error) {
         return console.log(error);
       });
@@ -21546,7 +21624,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "\n.v-application a {\r\n  text-decoration: none;\n}\r\n", ""]);
+exports.push([module.i, "\n.v-application a {\n  text-decoration: none;\n}\n", ""]);
 
 // exports
 
@@ -66217,10 +66295,10 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "v-footer",
-    { staticClass: "font-weight-medium" },
+    { staticClass: "font-weight-medium", attrs: { fixed: "" } },
     [
       _c("v-col", { staticClass: "text-center", attrs: { cols: "12" } }, [
-        _vm._v("\n\t" + _vm._s(new Date().getFullYear()) + " — "),
+        _vm._v("\n\t" + _vm._s(new Date().getFullYear()) + " —  "),
         _c("strong", [_vm._v("Forum")])
       ])
     ],
@@ -66249,7 +66327,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("v-app", [_c("toolbar"), _vm._v(" "), _c("app-footer")], 1)
+  return _c("v-app", [_c("toolbar")], 1)
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -66532,12 +66610,18 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
+                _vm.errors
+                  ? _c("v-alert", { attrs: { type: "error" } }, [
+                      _vm._v("Please Give the Category Name")
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
                 !_vm.editSlug
                   ? _c(
                       "v-btn",
                       {
                         staticClass: "mr-4",
-                        attrs: { color: "primary" },
+                        attrs: { color: "primary", disabled: _vm.disabled },
                         on: { click: _vm.submit }
                       },
                       [_vm._v("Create category")]
@@ -66546,7 +66630,7 @@ var render = function() {
                       "v-btn",
                       {
                         staticClass: "mr-4",
-                        attrs: { color: "primary" },
+                        attrs: { color: "primary", disabled: _vm.disabled },
                         on: { click: _vm.submit }
                       },
                       [_vm._v("update category")]
@@ -66659,6 +66743,12 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
+                _vm.errors.title
+                  ? _c("p", { staticClass: "red--text" }, [
+                      _vm._v("please Enter The Question name")
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
                 _c("vue-simplemde", {
                   ref: "markdownEditor",
                   model: {
@@ -66670,12 +66760,18 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
+                _vm.errors.body
+                  ? _c("p", { staticClass: "red--text" }, [
+                      _vm._v("please Enter More Details about question")
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
                 _c("v-select", {
                   attrs: {
                     items: _vm.categories,
                     "item-value": "id",
                     "item-text": "name",
-                    label: "category",
+                    label: "Select Category",
                     required: ""
                   },
                   model: {
@@ -66687,11 +66783,17 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
+                _vm.errors.category_id
+                  ? _c("p", { staticClass: "red--text" }, [
+                      _vm._v("please Enter More Details about question")
+                    ])
+                  : _vm._e(),
+                _vm._v(" "),
                 _c(
                   "v-btn",
                   {
                     staticClass: "mr-4",
-                    attrs: { color: "primary" },
+                    attrs: { color: "primary", disabled: _vm.disabled },
                     on: { click: _vm.submit }
                   },
                   [_vm._v("Creat question")]
@@ -66811,16 +66913,30 @@ var render = function() {
         "v-row",
         [
           _c("v-col", { attrs: { cols: "12" } }, [
-            _c("h1", { staticClass: "grey--text" }, [_vm._v(" Questions")])
+            _c("h1", { staticClass: "grey--text" }, [_vm._v("Questions")])
           ]),
           _vm._v(" "),
           _c(
             "v-col",
             { attrs: { cols: "8" } },
-            _vm._l(_vm.data, function(da) {
-              return _c("questions", { key: da.title, attrs: { data: da } })
-            }),
-            1
+            [
+              _vm._l(4, function(n) {
+                return _vm.visible
+                  ? _c("v-skeleton-loader", {
+                      key: n,
+                      ref: "skeleton",
+                      refInFor: true,
+                      staticClass: "mx-auto mb-5",
+                      attrs: { type: "list-item-avatar-three-line" }
+                    })
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(_vm.data, function(da, index) {
+                return _c("questions", { key: da.index, attrs: { data: da } })
+              })
+            ],
+            2
           ),
           _vm._v(" "),
           _c("v-col", { attrs: { cols: "4" } }, [_c("sidebar")], 1)
@@ -66901,14 +67017,7 @@ var render = function() {
                 domProps: { textContent: _vm._s(_vm.data.title) }
               }),
               _vm._v(" "),
-              _c("v-card-subtitle", [
-                _vm._v(
-                  _vm._s(_vm.data.title) +
-                    "   " +
-                    _vm._s(_vm.data.create_at) +
-                    "\n\t\t"
-                )
-              ]),
+              _c("v-card-subtitle", [_vm._v(_vm._s(_vm.data.create_at))]),
               _vm._v(" "),
               _c("v-card-text", {
                 domProps: { textContent: _vm._s(_vm.data.body) }
@@ -66924,7 +67033,7 @@ var render = function() {
                           attrs: { color: "success" },
                           on: { click: _vm.edit }
                         },
-                        [_vm._v("\n\t\t\t\tedit\n\t\t\t")]
+                        [_vm._v("edit")]
                       ),
                       _vm._v(" "),
                       _c(
@@ -66933,7 +67042,7 @@ var render = function() {
                           attrs: { color: "danger" },
                           on: { click: _vm.destroy }
                         },
-                        [_vm._v("\n\t\t\t\tDelete\n\t\t\t")]
+                        [_vm._v("Delete")]
                       )
                     ],
                     1
@@ -66944,11 +67053,44 @@ var render = function() {
           )
         : _vm._e(),
       _vm._v(" "),
+      _c(
+        "v-row",
+        _vm._l(4, function(n) {
+          return _c(
+            "v-col",
+            { key: n, attrs: { cols: "6" } },
+            [
+              _vm.visible
+                ? _c("v-skeleton-loader", {
+                    ref: "skeleton",
+                    refInFor: true,
+                    staticClass: "my-5 mx-10",
+                    attrs: { type: "card" }
+                  })
+                : _vm._e()
+            ],
+            1
+          )
+        }),
+        1
+      ),
+      _vm._v(" "),
       _c("replies", {
         attrs: { questionSlug: _vm.data.slug, replies: _vm.data.replies }
       }),
       _vm._v(" "),
-      _c("add-reply", { attrs: { questionSlug: _vm.data.slug } })
+      _vm.userIsLogin
+        ? _c("add-reply", { attrs: { questionSlug: _vm.data.slug } })
+        : _c(
+            "div",
+            { staticClass: "mt-4 text-center" },
+            [
+              _c("router-link", { attrs: { to: { name: "login" } } }, [
+                _vm._v("login to to reply")
+              ])
+            ],
+            1
+          )
     ],
     1
   )
@@ -66981,7 +67123,7 @@ var render = function() {
     [
       _c(
         "v-card",
-        { staticClass: "mt-4", attrs: { dark: "" } },
+        { staticClass: "mb-5", attrs: { dark: "" } },
         [
           _c("v-card-title", [_vm._v(_vm._s(_vm.data.title))]),
           _vm._v(" "),
@@ -67020,111 +67162,130 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "div",
+    "v-container",
     [
-      _c("h1", { staticClass: "mt-10 mb-10 text-center" }, [_vm._v("Replies")]),
-      _vm._v(" "),
       _c(
-        "v-timeline",
-        _vm._l(_vm.replies, function(reply, index) {
-          return _c(
-            "v-timeline-item",
-            {
-              key: index,
-              attrs: { large: "" },
-              scopedSlots: _vm._u(
-                [
-                  {
-                    key: "icon",
-                    fn: function() {
-                      return [
-                        _c("v-avatar", [
-                          _c("img", {
-                            attrs: { src: "http://i.pravatar.cc/64" }
-                          })
-                        ])
-                      ]
-                    },
-                    proxy: true
-                  },
-                  {
-                    key: "opposite",
-                    fn: function() {
-                      return [
-                        _c("p", [
-                          _vm._v(
-                            "\n          " + _vm._s(reply.user) + "\n          "
-                          ),
-                          _c("br"),
-                          _vm._v(" "),
-                          _c("span", { staticClass: "grey--text" }, [
-                            _vm._v(
-                              "\n            " +
-                                _vm._s(reply.create_at) +
-                                "\n          "
-                            )
-                          ])
-                        ])
-                      ]
-                    },
-                    proxy: true
-                  }
-                ],
-                null,
-                true
-              )
-            },
-            [
-              _vm._v(" "),
-              _vm._v(" "),
-              _c(
-                "v-card",
-                { staticClass: "elevation-2" },
-                [
-                  _c("v-card-text", [
-                    _vm._v(
-                      "\n          " + _vm._s(reply.reply) + "\n          "
-                    ),
+        "v-row",
+        [
+          _c("v-col", { staticClass: "text-center", attrs: { cols: "12" } }, [
+            _c("h1", { staticClass: "text-center" }, [_vm._v("replies")])
+          ]),
+          _vm._v(" "),
+          _vm._l(_vm.replies, function(reply, index) {
+            return _c(
+              "v-col",
+              { key: index, attrs: { cols: "6" } },
+              [
+                _c(
+                  "v-card",
+                  { staticClass: "mt-5", attrs: { dark: "" } },
+                  [
                     _c(
-                      "div",
-                      { staticClass: "actions" },
+                      "v-card-title",
                       [
-                        _c("like", { attrs: { data: reply } }),
+                        _c("v-icon", { attrs: { large: "", left: "" } }, [
+                          _vm._v("mdi-twitter")
+                        ]),
+                        _vm._v(" "),
+                        _c("span", { staticClass: "title font-weight-light" }, [
+                          _vm._v("Twitter")
+                        ]),
                         _vm._v(" "),
                         _c("v-spacer"),
                         _vm._v(" "),
-                        _vm.own(reply.user_id)
-                          ? _c(
-                              "v-btn",
-                              { attrs: { icon: "" } },
+                        _c("span", [_vm._v(_vm._s(reply.create_at))])
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "v-card-text",
+                      { staticClass: "headline font-weight-bold" },
+                      [_vm._v('"' + _vm._s(reply.reply) + '"')]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "v-card-actions",
+                      [
+                        _c(
+                          "v-list-item",
+                          { staticClass: "grow" },
+                          [
+                            _c(
+                              "v-list-item-avatar",
+                              { attrs: { color: "grey darken-3" } },
                               [
-                                _c(
-                                  "v-icon",
-                                  {
-                                    on: {
-                                      click: function($event) {
-                                        return _vm.destroy(index, reply.id)
-                                      }
-                                    }
-                                  },
-                                  [_vm._v("mdi-delete")]
-                                )
+                                _c("v-img", {
+                                  staticClass: "elevation-6",
+                                  attrs: { src: "http://i.pravatar.cc/64" }
+                                })
                               ],
                               1
+                            ),
+                            _vm._v(" "),
+                            _c(
+                              "v-list-item-content",
+                              [
+                                _c("v-list-item-title", [
+                                  _vm._v(_vm._s(reply.user))
+                                ])
+                              ],
+                              1
+                            ),
+                            _vm._v(" "),
+                            _c(
+                              "v-row",
+                              { attrs: { align: "center", justify: "end" } },
+                              [
+                                _c(
+                                  "div",
+                                  { staticClass: "actions" },
+                                  [
+                                    _c("like", { attrs: { data: reply } }),
+                                    _vm._v(" "),
+                                    _vm.own(reply.user_id)
+                                      ? _c(
+                                          "v-btn",
+                                          { attrs: { icon: "" } },
+                                          [
+                                            _c(
+                                              "v-icon",
+                                              {
+                                                on: {
+                                                  click: function($event) {
+                                                    return _vm.destroy(
+                                                      index,
+                                                      reply.id
+                                                    )
+                                                  }
+                                                }
+                                              },
+                                              [_vm._v("mdi-delete")]
+                                            )
+                                          ],
+                                          1
+                                        )
+                                      : _vm._e()
+                                  ],
+                                  1
+                                )
+                              ]
                             )
-                          : _vm._e()
+                          ],
+                          1
+                        )
                       ],
                       1
                     )
-                  ])
-                ],
-                1
-              )
-            ],
-            1
-          )
-        }),
-        1
+                  ],
+                  1
+                )
+              ],
+              1
+            )
+          })
+        ],
+        2
       )
     ],
     1
@@ -67241,25 +67402,39 @@ var render = function() {
                 expression: "categories"
               }
             },
-            _vm._l(_vm.categories, function(category, i) {
-              return _c(
-                "v-list-item",
-                { key: i },
-                [
-                  _c(
-                    "v-list-item-content",
-                    [
-                      _c("v-list-item-title", {
-                        domProps: { textContent: _vm._s(category.name) }
-                      })
-                    ],
-                    1
-                  )
-                ],
-                1
-              )
-            }),
-            1
+            [
+              _vm._l(3, function(n) {
+                return _vm.visible
+                  ? _c("v-skeleton-loader", {
+                      key: n,
+                      ref: "skeleton",
+                      refInFor: true,
+                      staticClass: "my-5 mx-10",
+                      attrs: { type: "list-item-two-line" }
+                    })
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(_vm.categories, function(category, i) {
+                return _c(
+                  "v-list-item",
+                  { key: i },
+                  [
+                    _c(
+                      "v-list-item-content",
+                      [
+                        _c("v-list-item-title", {
+                          domProps: { textContent: _vm._s(category.name) }
+                        })
+                      ],
+                      1
+                    )
+                  ],
+                  1
+                )
+              })
+            ],
+            2
           )
         ],
         1
@@ -67312,7 +67487,9 @@ var render = function() {
                     ),
                     [
                       _c("v-icon", [_vm._v("mdi-bell")]),
-                      _vm._v(_vm._s(_vm.unreadCount) + "\n      ")
+                      _vm._v(
+                        "\n        " + _vm._s(_vm.unreadCount) + "\n      "
+                      )
                     ],
                     1
                   )
@@ -67346,7 +67523,11 @@ var render = function() {
                           },
                           [
                             _c("b", [_vm._v(_vm._s(item.replyBy))]),
-                            _vm._v(" reply on " + _vm._s(item.question))
+                            _vm._v(
+                              "\n            reply on " +
+                                _vm._s(item.question) +
+                                "\n\n          "
+                            )
                           ]
                         )
                       ],
@@ -67366,7 +67547,11 @@ var render = function() {
                   [
                     _c("v-list-item-title", [
                       _c("b", [_vm._v(_vm._s(item.replyBy))]),
-                      _vm._v(" reply on " + _vm._s(item.question))
+                      _vm._v(
+                        "\n          reply on " +
+                          _vm._s(item.question) +
+                          "\n        "
+                      )
                     ]),
                     _vm._v(" "),
                     _c("v-divider")
@@ -67415,7 +67600,7 @@ var render = function() {
         [
           _c("v-app-bar-nav-icon"),
           _vm._v(" "),
-          _c("v-toolbar-title", [_vm._v("lol")]),
+          _c("v-toolbar-title", [_vm._v("Forum")]),
           _vm._v(" "),
           _c("notification"),
           _vm._v(" "),
@@ -123958,7 +124143,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var simplemde_dist_simplemde_min_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! simplemde/dist/simplemde.min.css */ "./node_modules/simplemde/dist/simplemde.min.css");
 /* harmony import */ var simplemde_dist_simplemde_min_css__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(simplemde_dist_simplemde_min_css__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _helpers_user__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./helpers/user */ "./resources/js/helpers/user.js");
-/* harmony import */ var _router_index_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./router/index.js */ "./resources/js/router/index.js");
+/* harmony import */ var _helpers_Exceptions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./helpers/Exceptions */ "./resources/js/helpers/Exceptions.js");
+/* harmony import */ var _router_index_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./router/index.js */ "./resources/js/router/index.js");
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
@@ -123974,6 +124160,8 @@ window.EventBus = new Vue();
 console.log(_helpers_user__WEBPACK_IMPORTED_MODULE_4__["default"].isLogin());
 
 window.User = _helpers_user__WEBPACK_IMPORTED_MODULE_4__["default"];
+
+window.Exception = _helpers_Exceptions__WEBPACK_IMPORTED_MODULE_5__["default"];
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -124002,7 +124190,7 @@ var app = new Vue({
       dark: true
     }
   }),
-  router: _router_index_js__WEBPACK_IMPORTED_MODULE_5__["default"]
+  router: _router_index_js__WEBPACK_IMPORTED_MODULE_6__["default"]
 });
 
 /***/ }),
@@ -124058,7 +124246,7 @@ window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   encrypted: true,
   auth: {
     headers: {
-      Authorization: JWTtoken
+      'Authorization': JWTtoken
     }
   }
 });
@@ -125256,6 +125444,48 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/helpers/Exceptions.js":
+/*!********************************************!*\
+  !*** ./resources/js/helpers/Exceptions.js ***!
+  \********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _user__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./user */ "./resources/js/helpers/user.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var Exceptions = /*#__PURE__*/function () {
+  function Exceptions() {
+    _classCallCheck(this, Exceptions);
+  }
+
+  _createClass(Exceptions, [{
+    key: "handle",
+    value: function handle(error) {
+      this.isExpired(error);
+    }
+  }, {
+    key: "isExpired",
+    value: function isExpired(error) {
+      error == "Token Is Expired" ? _user__WEBPACK_IMPORTED_MODULE_0__["default"].logout() : "";
+    }
+  }]);
+
+  return Exceptions;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Exceptions = new Exceptions());
+
+/***/ }),
+
 /***/ "./resources/js/helpers/Token.js":
 /*!***************************************!*\
   !*** ./resources/js/helpers/Token.js ***!
@@ -125290,13 +125520,22 @@ var Token = /*#__PURE__*/function () {
   }, {
     key: "payload",
     value: function payload(token) {
-      var payload = token.split('.')[1];
+      var payload = token.split(".")[1];
       return this.decode(payload);
     }
   }, {
     key: "decode",
     value: function decode(payload) {
-      return JSON.parse(atob(payload));
+      return this.isBased64(payload) ? JSON.parse(atob(payload)) : false;
+    }
+  }, {
+    key: "isBased64",
+    value: function isBased64(Str) {
+      try {
+        return btoa(atob(Str)).replace(/=/g, "") == Str;
+      } catch (error) {
+        return false;
+      }
     }
   }]);
 
@@ -125409,18 +125648,25 @@ var User = /*#__PURE__*/function () {
       var username = res.data.user;
 
       if (_Token_js__WEBPACK_IMPORTED_MODULE_0__["default"].isValid(access_token)) {
-        console.log('stored');
+        console.log("stored");
         _appStorage_js__WEBPACK_IMPORTED_MODULE_1__["default"].store(username, access_token);
         window.location = "/forum";
       }
     }
+    /*
+        if there is token stored in local storage
+        then check if it is valid
+        @valid =>login()
+        @notVAlid =>logout()
+    */
+
   }, {
     key: "hasToken",
     value: function hasToken() {
       var storedToken = _appStorage_js__WEBPACK_IMPORTED_MODULE_1__["default"].getToken();
 
       if (storedToken) {
-        return _Token_js__WEBPACK_IMPORTED_MODULE_0__["default"].isValid(storedToken);
+        return _Token_js__WEBPACK_IMPORTED_MODULE_0__["default"].isValid(storedToken) ? true : this.logout();
       }
 
       return false;
@@ -125501,7 +125747,8 @@ __webpack_require__.r(__webpack_exports__);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]);
 var routes = [{
   path: '/login',
-  component: _components_authentication_login__WEBPACK_IMPORTED_MODULE_2__["default"]
+  component: _components_authentication_login__WEBPACK_IMPORTED_MODULE_2__["default"],
+  name: "login"
 }, {
   path: '/logout',
   component: _components_authentication_logout__WEBPACK_IMPORTED_MODULE_4__["default"]

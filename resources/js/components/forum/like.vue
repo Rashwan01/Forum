@@ -15,6 +15,8 @@ export default {
   },
   created(){
 
+
+console.log(this.liked);
 Echo.channel('likeChannel')
     .listen('LikeEvent', (e) => {
 
@@ -33,6 +35,7 @@ Echo.channel('likeChannel')
   methods: {
     likeIt() {
       if (User.isLogin()) {
+
         this.liked ? this.decr() : this.incr();
         this.liked = !this.liked;
       }

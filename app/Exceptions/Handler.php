@@ -7,6 +7,7 @@ use Throwable;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class Handler extends ExceptionHandler
 {
@@ -66,7 +67,7 @@ class Handler extends ExceptionHandler
         elseif($exception instanceof TokenExpiredException)
         {
 
-            return response(['error'=>'Token Is Expired '],500);
+            return response()->json(['error'=>'Token Is Expired'],500);
         }
         elseif($exception  instanceof JWTException)
         {

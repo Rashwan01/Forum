@@ -16,6 +16,8 @@ window.EventBus = new Vue();
 console.log(User.isLogin());
 import User from "./helpers/user"
 window.User = User
+import Exception from "./helpers/Exceptions";
+window.Exception = Exception
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
